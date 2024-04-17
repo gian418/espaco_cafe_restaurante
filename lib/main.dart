@@ -1,5 +1,6 @@
 import 'package:espaco_cafe_restaurante/firebase_options.dart';
 import 'package:espaco_cafe_restaurante/login.dart';
+import 'package:espaco_cafe_restaurante/route_generator.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -23,6 +24,7 @@ void main() async {
         ),
       ),
       initialRoute: "/",
+      onGenerateRoute: RouteGenerator.generateRoute
     )
   );
 }

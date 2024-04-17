@@ -1,3 +1,5 @@
+import 'package:espaco_cafe_restaurante/route_generator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Login extends StatefulWidget {
@@ -8,6 +10,70 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+
+  TextEditingController _controllerEmail = TextEditingController();
+  TextEditingController _controllerSenha = TextEditingController();
+
+  _autenticarUsuario() {
+    String email = _controllerEmail.text;
+    String senha = _controllerSenha.text;
+
+    bool ehEmailValido = _validarEmail(email);
+
+    if (!ehEmailValido) {
+      var snackBar = _construirSnackBar("Email informado é inválido", true);
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      return;
+    }
+
+    if (senha.isEmpty) {
+      var snackBar = _construirSnackBar("A senha deve ser informada", true);
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      return;
+    }
+
+    FirebaseAuth autenticador = FirebaseAuth.instance;
+    autenticador.signInWithEmailAndPassword(email: email, password: senha)
+        .then((firebaseUser) {
+          Navigator.pushReplacementNamed(context, RouteGenerator.LISTA_COMRPAS);
+        }).catchError((error) {
+          var snackBar = _construirSnackBar("Erro ao autenticar. Verifique email e senha.", true);
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        });
+  }
+
+  SnackBar _construirSnackBar(String msg, ehErro) {
+    return SnackBar(
+      content: Text(
+        msg,
+        style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16),
+      ),
+      backgroundColor: ehErro ? Colors.red : Colors.green,
+      duration: const Duration(seconds: 6),
+    );
+  }
+
+  bool _validarEmail(String email) {
+    final RegExp regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return regex.hasMatch(email);
+  }
+
+  _verificarAutenticacao() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? usuarioLogado = await auth.currentUser;
+    if (usuarioLogado != null) {
+      Navigator.pushReplacementNamed(context, RouteGenerator.LISTA_COMRPAS);
+    }
+  }
+
+  @override
+  void initState() {
+    _verificarAutenticacao();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,7 +128,7 @@ class _LoginState extends State<Login> {
                           Padding(
                             padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                             child: TextField(
-                              controller: null,
+                              controller: _controllerEmail,
                               keyboardType: TextInputType.emailAddress,
                               style: const TextStyle(
                                   fontSize: 16, color: Color(0xff743C29)),
@@ -81,7 +147,7 @@ class _LoginState extends State<Login> {
                             padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                             child: TextField(
                               obscureText: true,
-                              controller: null,
+                              controller: _controllerSenha,
                               keyboardType: TextInputType.text,
                               style: const TextStyle(
                                   fontSize: 16, color: Color(0xff743C29)),
@@ -121,7 +187,9 @@ class _LoginState extends State<Login> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                                onPressed: () {},
+                                onPressed: () {
+                                  _autenticarUsuario();
+                                },
                                 child: const Text(
                                   "Entrar",
                                   style: TextStyle(color: Color(0xff743C29), fontSize: 20, fontWeight: FontWeight.bold),
