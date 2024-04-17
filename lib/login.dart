@@ -49,7 +49,7 @@ class _LoginState extends State<Login> {
                       width: double.infinity,
                       child: Column(
                         children: [
-                          Padding(
+                          const Padding(
                             padding: EdgeInsets.fromLTRB(20, 20, 20, 16),
                             child: Text(
                               "FAÇA SEU LOGIN",
@@ -114,10 +114,6 @@ class _LoginState extends State<Login> {
                             child: SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                child: const Text(
-                                  "Entrar",
-                                  style: TextStyle(color: Color(0xff743C29), fontSize: 20, fontWeight: FontWeight.bold),
-                                ),
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                                   backgroundColor: Colors.white,
@@ -126,6 +122,10 @@ class _LoginState extends State<Login> {
                                   ),
                                 ),
                                 onPressed: () {},
+                                child: const Text(
+                                  "Entrar",
+                                  style: TextStyle(color: Color(0xff743C29), fontSize: 20, fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ),
                           ),

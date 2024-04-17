@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "855306809854",
+    "project_id": "espaco-cafe-restaurante",
+    "storage_bucket": "espaco-cafe-restaurante.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:855306809854:android:e034a3f243b227f78350af",
+        "android_client_info": {
+          "package_name": "br.edu.catolicasc.espaco_cafe_restaurante"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAPw0OLegPBgyGUZQVe8hHS7_4ggtsnNc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

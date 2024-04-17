@@ -1,7 +1,15 @@
+import 'package:espaco_cafe_restaurante/firebase_options.dart';
 import 'package:espaco_cafe_restaurante/login.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+void main() async {
+
+  //Inicializa o Firebase
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   final ThemeData theme = ThemeData(fontFamily: 'Baloo');
   runApp(
@@ -14,6 +22,7 @@ void main() {
           secondary: const Color(0xff743C29),
         ),
       ),
+      initialRoute: "/",
     )
   );
 }
