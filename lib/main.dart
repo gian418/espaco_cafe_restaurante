@@ -12,7 +12,11 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  final ThemeData theme = ThemeData(fontFamily: 'Baloo');
+  final ThemeData theme = ThemeData(
+      fontFamily: 'Baloo',
+      splashColor: const Color(0xffEA8C2F)
+  );
+
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
