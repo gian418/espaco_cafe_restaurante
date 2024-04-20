@@ -67,22 +67,66 @@ class _ListaComprasState extends State<ListaCompras> {
       child: Dismissible(
         key: Key(DateTime.now().microsecondsSinceEpoch.toString()),
         direction: DismissDirection.horizontal,
+        confirmDismiss: (direction) async {
+          return await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+
+              String titulo =  "Cancelar a Lista de Compras";
+              String conteudo = "Você tem certeza que deseja cancelar a lista de compras?";
+              if (direction == DismissDirection.startToEnd) {
+                titulo =  "Enviar Lista para Fornecedores";
+                conteudo = "Você deseja enviar a lista para os fornecedores?";
+              }
+
+              return AlertDialog(
+                title: Text(
+                  titulo,
+                  style: const TextStyle(
+                      color: Color.fromRGBO(116, 60, 41, 1),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold),
+                ),
+                content: Text(
+                  conteudo,
+                  style: const TextStyle(
+                      color: Color.fromRGBO(116, 60, 41, 1),
+                      fontSize: 14,
+                      fontWeight: FontWeight.normal),
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text("Não",
+                        style:
+                            TextStyle(color: Color.fromRGBO(116, 60, 41, 1))),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text("Sim",
+                        style:
+                            TextStyle(color: Color.fromRGBO(116, 60, 41, 1))),
+                  ),
+                ],
+              );
+            },
+          );
+        },
         onDismissed: (direction) {
           if (direction == DismissDirection.endToStart) {
             FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-            Map<String, dynamic> atualizarStatusLista = {
-              "status" : "Cancelada"
-            };
+            Map<String, dynamic> atualizarStatusLista = {"status": "Cancelada"};
 
-            firestore.collection("ListasCompras")
-            .doc(lista.id)
-            .update(atualizarStatusLista)
-            .then((_) => {
-              setState((){
-                lista.status = "Cancelada";
-              })
-            });
+            firestore
+                .collection("ListasCompras")
+                .doc(lista.id)
+                .update(atualizarStatusLista)
+                .then((_) => {
+                      setState(() {
+                        lista.status = "Cancelada";
+                      })
+                    });
           }
 
           if (direction == DismissDirection.startToEnd) {
@@ -117,7 +161,8 @@ class _ListaComprasState extends State<ListaCompras> {
         ),
         child: Card(
           color: const Color(0xffD6B9AC),
-          elevation: 0, // Remove a elevação do Card para que ele não se sobreponha ao Container exterior
+          elevation:
+              0, // Remove a elevação do Card para que ele não se sobreponha ao Container exterior
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
@@ -134,7 +179,7 @@ class _ListaComprasState extends State<ListaCompras> {
                 ),
                 Container(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: _getStatusColor(lista.status),
                     borderRadius: BorderRadius.circular(20),
@@ -163,7 +208,6 @@ class _ListaComprasState extends State<ListaCompras> {
     );
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -172,7 +216,6 @@ class _ListaComprasState extends State<ListaCompras> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBarDefault.build(),
       endDrawer: EndDrawerDefault.build(context),
@@ -238,7 +281,8 @@ class _ListaComprasState extends State<ListaCompras> {
                           itemBuilder: (_, indice) {
                             List<ListasCompra> listas = snapshot.data!;
                             ListasCompra lista = listas[indice];
-                            return criarItemStreamBuilder(context, indice, lista);
+                            return criarItemStreamBuilder(
+                                context, indice, lista);
                           },
                         );
                       } else {
