@@ -1,5 +1,6 @@
 class ListasCompra {
 
+  late String _id;
   late String _data;
   late String _descricao;
   late String _status;
@@ -24,5 +25,9 @@ class ListasCompra {
     _descricao = value;
   }
 
+  String get id => _id;
 
+  set id(String value) {
+    _id = value;
+  }
 }
