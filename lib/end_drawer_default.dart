@@ -37,7 +37,7 @@ class EndDrawerDefault {
               title:  _construirTextMenu("Fornecedores"),
               trailing: const Icon(Icons.people_outline, color: Color(0xffEA8C2F)),
               onTap: () {
-
+                Navigator.pushNamed(context, RouteGenerator.FORNECEDORES);
               },
             ),
             ListTile(

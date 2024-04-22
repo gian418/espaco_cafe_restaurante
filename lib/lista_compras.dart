@@ -35,17 +35,17 @@ class _ListaComprasState extends State<ListaCompras> {
         .collection("ListasCompras")
         .snapshots()
         .map((querySnapshot) {
-      return querySnapshot.docs
-          .map((doc) {
-            var lista = ListasCompra();
-            lista.id = doc.id;
-            lista.data = doc.get("dataCriacao");
-            lista.descricao = doc.get("descricao");
-            lista.status = doc.get("status");
-            return lista;
-          })
-          .where((lista) => statusSelecionados.contains(lista.status))
-          .toList();
+          return querySnapshot.docs
+              .map((doc) {
+                var lista = ListasCompra();
+                lista.id = doc.id;
+                lista.data = doc.get("dataCriacao");
+                lista.descricao = doc.get("descricao");
+                lista.status = doc.get("status");
+                return lista;
+              })
+              .where((lista) => statusSelecionados.contains(lista.status))
+              .toList();
     });
   }
 
@@ -64,7 +64,7 @@ class _ListaComprasState extends State<ListaCompras> {
 
   Widget criarItemStreamBuilder(context, indice, ListasCompra lista) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      margin: const EdgeInsets.symmetric(vertical: 7, horizontal: 8),
       decoration: BoxDecoration(
         color: const Color(0xffD6B9AC),
         borderRadius: BorderRadius.circular(8),
@@ -201,8 +201,7 @@ class _ListaComprasState extends State<ListaCompras> {
         ),
         child: Card(
           color: const Color(0xffD6B9AC),
-          elevation:
-              0, // Remove a elevação do Card para que ele não se sobreponha ao Container exterior
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
