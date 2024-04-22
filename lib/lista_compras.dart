@@ -17,6 +17,19 @@ class _ListaComprasState extends State<ListaCompras> {
   late Stream<List<ListasCompra>> _streamListasCompras;
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  SnackBar _construirSnackBar(String msg, ehErro) {
+    return SnackBar(
+      content: Text(
+        msg,
+        style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16),
+      ),
+      backgroundColor: ehErro ? Colors.red : Colors.green,
+      duration: const Duration(seconds: 6),
+    );
+  }
+
   Stream<List<ListasCompra>> _carregarListasCompras() {
     return _firestore
         .collection("ListasCompras")
@@ -102,7 +115,21 @@ class _ListaComprasState extends State<ListaCompras> {
                             TextStyle(color: Color.fromRGBO(116, 60, 41, 1))),
                   ),
                   TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
+                    onPressed: () {
+                      if (direction == DismissDirection.startToEnd && lista.status != "Pendente") {
+                        var snackBar = _construirSnackBar("Apenas uma lista de compras com status Pendente pode ser enviada", true);
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        return Navigator.of(context).pop(false);
+                      }
+
+                      if (direction == DismissDirection.endToStart &&  lista.status != "Pendente") {
+                        var snackBar = _construirSnackBar("Apenas uma lista de compras com status Pendente pode ser cancelada", true);
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        return Navigator.of(context).pop(false);
+                      }
+
+                      return Navigator.of(context).pop(true);
+                    },
                     child: const Text("Sim",
                         style:
                             TextStyle(color: Color.fromRGBO(116, 60, 41, 1))),
@@ -115,9 +142,7 @@ class _ListaComprasState extends State<ListaCompras> {
         onDismissed: (direction) {
           if (direction == DismissDirection.endToStart) {
             FirebaseFirestore firestore = FirebaseFirestore.instance;
-
             Map<String, dynamic> atualizarStatusLista = {"status": "Cancelada"};
-
             firestore
                 .collection("ListasCompras")
                 .doc(lista.id)
@@ -125,12 +150,27 @@ class _ListaComprasState extends State<ListaCompras> {
                 .then((_) => {
                       setState(() {
                         lista.status = "Cancelada";
+                        var snackBar = _construirSnackBar("Lista de compras cancelada com sucesso", false);
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       })
-                    });
+                });
           }
 
           if (direction == DismissDirection.startToEnd) {
-            //Enviar para fornecedor. Se estiver cancelada ou enviada nao enviar.
+            FirebaseFirestore firestore = FirebaseFirestore.instance;
+            Map<String, dynamic> atualizarStatusLista = {"status": "Enviada"};
+            firestore
+                .collection("ListasCompras")
+                .doc(lista.id)
+                .update(atualizarStatusLista)
+                .then((_) => {
+              setState(() {
+                lista.status = "Enviada";
+                var snackBar = _construirSnackBar("Lista de compras enviada com sucesso", false);
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              })
+            });
+            //TODO implementar o envio pro whatsapp
           }
         },
         background: Container(
