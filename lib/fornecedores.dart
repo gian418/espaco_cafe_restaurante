@@ -134,11 +134,10 @@ class _FornecedoresState extends State<Fornecedores> {
               ),
               TextButton(
                   onPressed: () {
-                    _salvarFornecedor();
-                    //TODO modificar logica pra atualizar. Talvez passar o ID e verificar se é null
+                    _salvarFornecedor(fornecedor?.id);
                     Navigator.pop(context);
                   },
-                  child: Text(textoSalvarAtualizar, style: TextStyle(color: Color.fromRGBO(116, 60, 41, 1)))
+                  child: Text(textoSalvarAtualizar, style: const TextStyle(color: Color.fromRGBO(116, 60, 41, 1)))
               ),
             ],
           );
@@ -146,7 +145,8 @@ class _FornecedoresState extends State<Fornecedores> {
     );
   }
 
-  _salvarFornecedor() async {
+  _salvarFornecedor(String? fornecedorId) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
     String nome = _nomeController.text;
     String telefone = _telefoneController.text;
     String email = _emailController.text;
@@ -156,12 +156,18 @@ class _FornecedoresState extends State<Fornecedores> {
     fornecedor.telefone = telefone;
     fornecedor.email = email;
 
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    firestore.collection("Fornecedores").add(fornecedor.toMap())
-        .then((_) {
-          var snackBar = _construirSnackBar("Fornecedor adicionado com sucesso", false);
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    });
+    if (fornecedorId == null) {
+      firestore.collection("Fornecedores").add(fornecedor.toMap()).then((_) {
+        var snackBar = _construirSnackBar("Fornecedor adicionado com sucesso", false);
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      });
+    } else {
+      firestore.collection("Fornecedores").doc(fornecedorId).set(fornecedor.toMap()).then((_) {
+        var snackBar = _construirSnackBar("Fornecedor atualizado com sucesso", false);
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      });
+    }
+
   }
 
   SnackBar _construirSnackBar(String msg, ehErro) {
