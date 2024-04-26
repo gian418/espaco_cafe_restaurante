@@ -32,23 +32,36 @@ class _CadastroListaCompraState extends State<CadastroListaCompra> {
               ),
             ),
             Padding(
-                padding: const EdgeInsets.all(10),
-                child: TextField(
-                  controller: _descricaoController,
-                  autofocus: true,
-                  decoration: const InputDecoration(
-                    labelText: "Nome",
-                    hintText: "Digite uma descricão",
-                  ),
+              padding: const EdgeInsets.all(10),
+              child: TextField(
+                controller: _descricaoController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: "Nome",
+                  hintText: "Digite uma descricão",
                 ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Produtos selecionados"),
-                  Icon(Icons.search)
+                  const Text(
+                    "Produtos selecionados",
+                    style: TextStyle(
+                        color: Color.fromRGBO(116, 60, 41, 1),
+                        fontSize: 16
+                    ),
+                  ),
+                  ElevatedButton(
+                      onPressed: (){},
+                      child: const Icon(Icons.search, color: Color.fromRGBO(116, 60, 41, 1)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xffD6B9AC),
+                      surfaceTintColor: Colors.white
+                    ),
+                  )
                 ],
               ),
             ),
