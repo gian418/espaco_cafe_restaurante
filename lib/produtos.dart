@@ -41,7 +41,7 @@ class _ProdutosState extends State<Produtos> {
             style: const TextStyle(
                 color: Color.fromRGBO(116, 60, 41, 1),
                 fontSize: 16,
-                fontWeight: FontWeight.bold),
+                fontWeight: FontWeight.bold)
           ),
           onTap: () {
             _exibirTelaCadastro(produto: produto);

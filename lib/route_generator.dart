@@ -1,3 +1,4 @@
+import 'package:espaco_cafe_restaurante/cadastro_lista_compra.dart';
 import 'package:espaco_cafe_restaurante/fornecedores.dart';
 import 'package:espaco_cafe_restaurante/lista_compras.dart';
 import 'package:espaco_cafe_restaurante/login.dart';
@@ -11,6 +12,7 @@ class RouteGenerator {
   static const LISTA_COMRPAS = "/listaCompras";
   static const PRODUTOS = "/produtos";
   static const FORNECEDORES = "/fornecedores";
+  static const CADASTRO_LISTA_COMPRA = "/cadastroListaCompra";
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
 
@@ -25,6 +27,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const Produtos());
       case FORNECEDORES:
         return MaterialPageRoute(builder: (_) => const Fornecedores());
+      case CADASTRO_LISTA_COMPRA:
+        return MaterialPageRoute(builder: (_) => const CadastroListaCompra());
       default:
         return  _erroRota();
     }

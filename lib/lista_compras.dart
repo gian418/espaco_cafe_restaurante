@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espaco_cafe_restaurante/app_bar_default.dart';
 import 'package:espaco_cafe_restaurante/end_drawer_default.dart';
 import 'package:espaco_cafe_restaurante/model/listas_compra.dart';
+import 'package:espaco_cafe_restaurante/route_generator.dart';
 import 'package:flutter/material.dart';
 
 class ListaCompras extends StatefulWidget {
@@ -336,6 +337,14 @@ class _ListaComprasState extends State<ListaCompras> {
             ),
           ],
         ),
+      ),
+      floatingActionButton:  FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, RouteGenerator.CADASTRO_LISTA_COMPRA);
+        },
+        backgroundColor: const Color(0xffD6B9AC),
+        foregroundColor: const Color(0xff743C29),
+        child: const Icon(Icons.add),
       ),
     );
   }
