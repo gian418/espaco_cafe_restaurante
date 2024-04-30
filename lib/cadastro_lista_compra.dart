@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espaco_cafe_restaurante/app_bar_default.dart';
 import 'package:flutter/material.dart';
 
@@ -10,6 +11,62 @@ class CadastroListaCompra extends StatefulWidget {
 
 class _CadastroListaCompraState extends State<CadastroListaCompra> {
   TextEditingController _descricaoController = TextEditingController();
+  TextEditingController _nomeProdutoController = TextEditingController();
+
+  _exibirTelaBuscarProdutos() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            "Buscar Produto",
+            style: TextStyle(
+                color: Color.fromRGBO(116, 60, 41, 1),
+                fontSize: 16,
+                fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _nomeProdutoController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: "Produto",
+                  hintText: "Digite o nome do produto",
+                ),
+                onEditingComplete: () {
+                  _buscarProdutos();
+                },
+              ),
+              //Lista com os produtos encontrados
+            ],
+          ),
+          actions:  [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancelar", style: TextStyle(color: Color.fromRGBO(116, 60, 41, 1)),)
+            ),
+          ],
+        );
+      },
+    );
+  }
+  
+  _buscarProdutos() async {
+    String nomeProduto = _nomeProdutoController.text;
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    var querySnapshot = await firestore.collection("Produtos")
+        .where("nome", isGreaterThanOrEqualTo: nomeProduto)
+        .where("nome", isLessThan: nomeProduto + 'z')
+        .get();
+
+    for (DocumentSnapshot item in querySnapshot.docs) {
+      print("Dados: ${item.data()}");
+    }
+
+    _nomeProdutoController.clear();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +112,9 @@ class _CadastroListaCompraState extends State<CadastroListaCompra> {
                     ),
                   ),
                   ElevatedButton(
-                      onPressed: (){},
+                      onPressed: (){
+                        _exibirTelaBuscarProdutos();
+                      },
                       child: const Icon(Icons.search, color: Color.fromRGBO(116, 60, 41, 1)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xffD6B9AC),
