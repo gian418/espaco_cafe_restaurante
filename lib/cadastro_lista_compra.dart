@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espaco_cafe_restaurante/app_bar_default.dart';
-import 'package:espaco_cafe_restaurante/model/ProdutoLista.dart';
+import 'package:espaco_cafe_restaurante/lista_status.dart';
+import 'package:espaco_cafe_restaurante/model/produto_lista.dart';
+import 'package:espaco_cafe_restaurante/model/listas_compra.dart';
 import 'package:espaco_cafe_restaurante/model/produto.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class CadastroListaCompra extends StatefulWidget {
-  const CadastroListaCompra({super.key});
+  final ListasCompra? lista;
+  const CadastroListaCompra({super.key, this.lista});
 
   @override
   State<CadastroListaCompra> createState() => _CadastroListaCompraState();
@@ -17,7 +20,7 @@ class _CadastroListaCompraState extends State<CadastroListaCompra> {
   List<ProdutoLista> _produtosSelecionados = [];
   TextEditingController _descricaoController = TextEditingController();
   TextEditingController _nomeProdutoController = TextEditingController();
-  late String _fornecedorSelecionado;
+  String _fornecedorSelecionado = "";
   List<String> _fornecedores = [];
 
   void adicionarProdutoSelecionado(Produto produto) {
@@ -53,7 +56,7 @@ class _CadastroListaCompraState extends State<CadastroListaCompra> {
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.close),
+                          icon: const Icon(Icons.close),
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -135,19 +138,116 @@ class _CadastroListaCompraState extends State<CadastroListaCompra> {
     return fornecedores;
   }
 
+  Future<List<ProdutoLista>> _buscarProdutosDaLista() async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    var snapshot = await firestore.collection("ListasCompras").doc(widget.lista?.id).get();
+    var produtosMap = snapshot.get("produtos");
+
+    List<ProdutoLista> produtos = [];
+    for (Map<String, dynamic> produtoMap in produtosMap) {
+      ProdutoLista produto = ProdutoLista();
+      produto.nome = produtoMap["nome"];
+      produto.quantidade = produtoMap["quantidade"];
+      produto.quantidadeController.text = produto.quantidade.toString();
+      produtos.add(produto);
+    }
+
+    return produtos;
+  }
+
+  _salvar(bool isEditing) {
+    if (_produtosSelecionados.isEmpty) {
+      var snackBar = _construirSnackBar("É necessário ter ao menos 1 produto na lista", true);
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      return;
+    }
+
+    if (_descricaoController.text.isEmpty) {
+      var snackBar = _construirSnackBar("Informe uma descrição para a lista", true);
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      return;
+    }
+
+    if(_fornecedorSelecionado.isEmpty) {
+      var snackBar = _construirSnackBar("Selecione um fornecedor", true);
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      return;
+    }
+
+    ListasCompra lista = ListasCompra();
+    DateTime now = DateTime.now();
+    DateFormat formatter = DateFormat('dd/MM/yyyy HH:mm');
+
+    lista.status = ListaStatus.PENDENTE;
+    lista.produtos = _produtosSelecionados;
+    lista.descricao = _descricaoController.text;
+    lista.data = formatter.format(now);
+    lista.fornecedor = _fornecedorSelecionado;
+    
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    if (isEditing) {
+      firestore.collection("ListasCompras").doc(widget.lista?.id).set(lista.toMap())
+          .then((_) {
+            var snackBar = _construirSnackBar("Lista de Compras atualizada com sucesso", false);
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          });
+    } else {
+      firestore.collection("ListasCompras").add(lista.toMap())
+          .then((_) {
+            var snackBar = _construirSnackBar("Lista de Compras adicionada com sucesso", false);
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          });
+    }
+
+    Navigator.of(context).pop();
+  }
+
+  SnackBar _construirSnackBar(String msg, ehErro) {
+    return SnackBar(
+      content: Text(
+        msg,
+        style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16),
+      ),
+      backgroundColor: ehErro ? Colors.red : Colors.green,
+      duration: const Duration(seconds: 6),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _buscarFornecedores().then((fornecedores) {
       setState(() {
         _fornecedores = fornecedores;
-        _fornecedorSelecionado = (fornecedores.isNotEmpty ? fornecedores[0] : null)!;
+        if (_fornecedorSelecionado == "") {
+          _fornecedorSelecionado = (fornecedores.isNotEmpty ? fornecedores[0] : null)!;
+        }
       });
+
     });
+
+    if (widget.lista != null) {
+      _buscarProdutosDaLista().then((produtos) {
+        setState(() {
+          _produtosSelecionados = produtos;
+          _fornecedorSelecionado = widget.lista!.fornecedor;
+          _descricaoController.text = widget.lista!.descricao;
+        });
+      });
+
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    bool isEditing = widget.lista != null;
+    String textoNovaEditar = "Nova";
+    if (isEditing) {
+      textoNovaEditar = "Editar";
+    }
+
     return Scaffold(
       appBar: AppBarDefault.build(),
       body: Container(
@@ -158,9 +258,9 @@ class _CadastroListaCompraState extends State<CadastroListaCompra> {
               alignment: Alignment.center,
               width: double.infinity,
               color: const Color.fromRGBO(214, 185, 172, 0.41),
-              child: const Text(
-                "Nova Lista de Compras",
-                style: TextStyle(
+              child: Text(
+                "$textoNovaEditar Lista de Compras",
+                style: const TextStyle(
                     color: Color.fromRGBO(116, 60, 41, 1),
                     fontSize: 16,
                     fontWeight: FontWeight.w600),
@@ -170,7 +270,6 @@ class _CadastroListaCompraState extends State<CadastroListaCompra> {
               padding: const EdgeInsets.all(10),
               child: TextField(
                 controller: _descricaoController,
-                autofocus: true,
                 decoration: InputDecoration(
                   labelText: "Nome",
                   hintText: "Digite uma descricão",
@@ -242,36 +341,82 @@ class _CadastroListaCompraState extends State<CadastroListaCompra> {
                         title: Row(
                           children: [
                             Expanded(
-                              child: Text(produto.nome),
-                            ),
-                            SizedBox(
-                              width: 60,
-                              child: TextField(
-                                controller: produto.quantidadeController,
-                                textAlign: TextAlign.center,
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                  hintText: 'Qtd.',
-                                  contentPadding:
-                                      const EdgeInsets.fromLTRB(8, 6, 8, 6),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10)),
-                                ),
-                                onChanged: (value) {
-                                  int quantidade = int.tryParse(value) ?? 0;
-                                  setState(() {
-                                    produto.quantidade = quantidade;
-                                  });
-                                },
+                              child: Row(
+                                children: [
+
+                                  SizedBox(
+                                    width: 60,
+                                    child: TextField(
+                                      controller: produto.quantidadeController,
+                                      textAlign: TextAlign.center,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        hintText: 'Qtd.',
+                                        contentPadding:
+                                        const EdgeInsets.fromLTRB(8, 6, 8, 6),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(10)),
+                                      ),
+                                      onChanged: (value) {
+                                        int quantidade = int.tryParse(value) ?? 0;
+                                        setState(() {
+                                          produto.quantidade = quantidade;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 15),
+                                    child: Text(produto.nome),
+                                  ),
+                                ],
                               ),
                             ),
+                            GestureDetector(
+                              child: const Icon(Icons.delete),
+                              onTap: () {
+                                setState(() {
+                                  _produtosSelecionados.remove(produto);
+                                });
+                              },
+                            )
                           ],
                         ),
                       ),
                     );
                   }),
+            ),
+            Padding(
+              padding: EdgeInsets.all(20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: const Color(0xff743C29),
+                        backgroundColor: const Color.fromRGBO(214, 185, 172, 1),
+                        surfaceTintColor: Colors.white,
+                        textStyle: const TextStyle(fontWeight: FontWeight.bold)
+                      ),
+                      child: const Text("Cancelar"),
+                  ),
+                  ElevatedButton(
+                      onPressed: (){
+                        _salvar(isEditing);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: const Color(0xff743C29),
+                        backgroundColor: const Color.fromRGBO(214, 185, 172, 1),
+                        surfaceTintColor: Colors.white,
+                        textStyle: const TextStyle(fontWeight: FontWeight.bold)
+                      ),
+                      child: Text(isEditing ? "Atualizar" : "Salvar")
+                  ),
+                ],
+              ),
             ),
           ],
         ),

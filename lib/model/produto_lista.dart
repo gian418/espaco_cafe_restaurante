@@ -7,7 +7,7 @@ class ProdutoLista {
   late TextEditingController quantidadeController;
 
   ProdutoLista() {
-    quantidade = 1; // Valor padrão
+    quantidade = 1;
     quantidadeController = TextEditingController(text: quantidade.toString());
   }
 

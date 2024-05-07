@@ -2,6 +2,7 @@ import 'package:espaco_cafe_restaurante/cadastro_lista_compra.dart';
 import 'package:espaco_cafe_restaurante/fornecedores.dart';
 import 'package:espaco_cafe_restaurante/lista_compras.dart';
 import 'package:espaco_cafe_restaurante/login.dart';
+import 'package:espaco_cafe_restaurante/model/listas_compra.dart';
 import 'package:espaco_cafe_restaurante/produtos.dart';
 import 'package:flutter/material.dart';
 
@@ -16,6 +17,8 @@ class RouteGenerator {
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
 
+    final args = settings.arguments;
+
     switch(settings.name) {
       case RAIZ:
         return MaterialPageRoute(builder: (_) => const Login());
@@ -28,7 +31,7 @@ class RouteGenerator {
       case FORNECEDORES:
         return MaterialPageRoute(builder: (_) => const Fornecedores());
       case CADASTRO_LISTA_COMPRA:
-        return MaterialPageRoute(builder: (_) => const CadastroListaCompra());
+        return MaterialPageRoute(builder: (_) => CadastroListaCompra(lista: args as ListasCompra?));
       default:
         return  _erroRota();
     }

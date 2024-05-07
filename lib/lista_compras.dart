@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:espaco_cafe_restaurante/app_bar_default.dart';
 import 'package:espaco_cafe_restaurante/end_drawer_default.dart';
+import 'package:espaco_cafe_restaurante/lista_status.dart';
 import 'package:espaco_cafe_restaurante/model/listas_compra.dart';
 import 'package:espaco_cafe_restaurante/route_generator.dart';
 import 'package:flutter/material.dart';
@@ -43,6 +44,7 @@ class _ListaComprasState extends State<ListaCompras> {
                 lista.data = doc.get("dataCriacao");
                 lista.descricao = doc.get("descricao");
                 lista.status = doc.get("status");
+                lista.fornecedor = doc.get("fornecedor");
                 return lista;
               })
               .where((lista) => statusSelecionados.contains(lista.status))
@@ -52,11 +54,11 @@ class _ListaComprasState extends State<ListaCompras> {
 
   Color _getStatusColor(String status) {
     switch (status) {
-      case "Enviada":
+      case ListaStatus.ENVIADA:
         return Colors.green;
-      case "Pendente":
+      case ListaStatus.PENDENTE:
         return Colors.orange;
-      case "Cancelada":
+      case ListaStatus.CANCELADA:
         return Colors.red;
       default:
         return Colors.grey;
@@ -242,6 +244,19 @@ class _ListaComprasState extends State<ListaCompras> {
                 fontSize: 16,
               ),
             ),
+            onTap: (){
+              if (lista.status != ListaStatus.PENDENTE) {
+                var snackBar = _construirSnackBar("Apenas listas pendentes podem ser editadas", true);
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                return;
+              }
+
+              Navigator.pushNamed(
+                  context,
+                  RouteGenerator.CADASTRO_LISTA_COMPRA,
+                  arguments: lista
+              );
+            },
           ),
         ),
       ),
