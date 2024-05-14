@@ -3,8 +3,10 @@ import 'package:espaco_cafe_restaurante/app_bar_default.dart';
 import 'package:espaco_cafe_restaurante/end_drawer_default.dart';
 import 'package:espaco_cafe_restaurante/lista_status.dart';
 import 'package:espaco_cafe_restaurante/model/listas_compra.dart';
+import 'package:espaco_cafe_restaurante/model/produto_lista.dart';
 import 'package:espaco_cafe_restaurante/route_generator.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ListaCompras extends StatefulWidget {
   const ListaCompras({super.key});
@@ -45,6 +47,16 @@ class _ListaComprasState extends State<ListaCompras> {
                 lista.descricao = doc.get("descricao");
                 lista.status = doc.get("status");
                 lista.fornecedor = doc.get("fornecedor");
+
+                List<ProdutoLista> produtos = [];
+                for(Map<String, dynamic> produto in doc.get("produtos")) {
+                  ProdutoLista produtoLista = new ProdutoLista();
+                  produtoLista.quantidade = produto["quantidade"];
+                  produtoLista.nome = produto["nome"];
+                  produtos.add(produtoLista);
+                }
+
+                lista.produtos = produtos;
                 return lista;
               })
               .where((lista) => statusSelecionados.contains(lista.status))
@@ -160,20 +172,20 @@ class _ListaComprasState extends State<ListaCompras> {
           }
 
           if (direction == DismissDirection.startToEnd) {
-            FirebaseFirestore firestore = FirebaseFirestore.instance;
-            Map<String, dynamic> atualizarStatusLista = {"status": "Enviada"};
-            firestore
-                .collection("ListasCompras")
-                .doc(lista.id)
-                .update(atualizarStatusLista)
-                .then((_) => {
-              setState(() {
-                lista.status = "Enviada";
-                var snackBar = _construirSnackBar("Lista de compras enviada com sucesso", false);
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-              })
+            _enviarMsgWhatsApp(lista).then((enviado) {
+              if (enviado) {
+                FirebaseFirestore firestore = FirebaseFirestore.instance;
+                Map<String, dynamic> atualizarStatusLista = {"status": "Enviada"};
+                firestore.collection("ListasCompras").doc(lista.id)
+                    .update(atualizarStatusLista).then((_) => {
+                  setState(() {
+                    lista.status = "Enviada";
+                    var snackBar = _construirSnackBar("Lista de compras enviada com sucesso", false);
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  })
+                });
+              }
             });
-            //TODO implementar o envio pro whatsapp
           }
         },
         background: Container(
@@ -261,6 +273,27 @@ class _ListaComprasState extends State<ListaCompras> {
         ),
       ),
     );
+  }/**/
+
+  Future<bool> _enviarMsgWhatsApp(ListasCompra lista) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    return firestore.collection("Fornecedores").where("nome", isEqualTo: lista.fornecedor).limit(1).get().then((fornecedor) {
+      String telefoneFornecedor = "";
+      for(var fornecedor in fornecedor.docs) {
+        telefoneFornecedor = fornecedor.get("telefone");
+      }
+
+      String produtosMsg = "";
+      for(ProdutoLista produto in lista.produtos) {
+        produtosMsg = "$produtosMsg\n>> ${produto.nome} | Qtd: ${produto.quantidade}";
+      }
+
+      String message = "Olá, tudo bem? Você poderia me passar um orçamento para a seguinte lista de produtos? $produtosMsg";
+      String encodedMessage = Uri.encodeFull(message);
+      String url = "https://wa.me/$telefoneFornecedor?text=$encodedMessage";
+      print(message);
+      return launchUrl(Uri.parse(url));
+    });
   }
 
   @override
